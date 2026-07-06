@@ -1,3 +1,5 @@
+Probably temperature was very cold, hitting the acidity higher in the end. 
+
 The idea is to know try different varietals and a merlot.
 1. Malbec
 2. Tannat
