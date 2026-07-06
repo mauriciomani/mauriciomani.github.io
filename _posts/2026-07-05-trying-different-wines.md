@@ -34,3 +34,4 @@ brick color, extremly sweet on the nose , cake fruit, strawberry jam.
 This was not expected to be stored for a very long time, since it is a young wine. 
 very low tanins and very low acidity, the alcohol can be perceibed and a vinager or biterness end, without being super awful or undrinkable.
 
+Some important points I felt that Merlot and Syrah were velvety while malbec was silky however, they all had a very similar amount of tanins.
