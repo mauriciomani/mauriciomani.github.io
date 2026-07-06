@@ -15,7 +15,7 @@ sweet ln the nose (zarzamora, ciruela, cacao)
 Tannat
 I found tannat with low acidity and very high tannins. 
 Mine was a bit sweet on the nose (licorice, grosella, ciruela, cardamomo) and herbaceus.
-I felt very low acidity but probably it was because how high the tannis are. I felt they hit in the beginning and then disappear.
+I felt very low acidity but probably it was because how high the tannis are. I felt they hit in the beginning and then disappear, probably due to the high amount of tannins
 
 Petite Sirah
 Sweeter on the nose than the Sirah. More tanins and body compared to sirah.
