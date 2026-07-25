@@ -39,6 +39,10 @@ def find_best_route(start_place, other_places, k):
                 best_path = full_path
     return best_dist, best_path
 
+# Initialize persistent session state
+if "route_calculated" not in st.session_state:
+    st.session_state.route_calculated = False
+
 st.title("🍻 Optimizador Pub Crawl CDMX Roma-Condesa")
 
 # Sidebar Controls
@@ -46,27 +50,23 @@ st.sidebar.header("Ajustes de ruta")
 
 all_venue_names = [p["name"] for p in ALL_PLACES]
 
-# Multiselect filter to pick candidate places
 selected_venue_names = st.sidebar.multiselect(
     "Bares a considerar:",
     options=all_venue_names,
     default=all_venue_names
 )
 
-# Validate active selections
 if len(selected_venue_names) < 2:
     st.warning("Por favor selecciona al menos dos lugares para generar una ruta.")
+    st.session_state.route_calculated = False
 else:
-    # Filter dataset based on multiselect
     active_places = [p for p in ALL_PLACES if p["name"] in selected_venue_names]
     
-    # Starting Venue Selector
     selected_start_name = st.sidebar.selectbox(
         "Lugar de inicio:",
         options=selected_venue_names
     )
     
-    # Total Stops Slider
     max_k = len(active_places)
     k_stops = st.sidebar.slider(
         "Bares a visitar en total:",
@@ -75,8 +75,9 @@ else:
         value=min(4, max_k)
     )
 
-    # Action button in sidebar
-    run_optimization = st.sidebar.button("🚀 Calcular Ruta Óptima", type="primary")
+    # When button is clicked, set persistent flag to True
+    if st.sidebar.button("🚀 Calcular Ruta Óptima", type="primary"):
+        st.session_state.route_calculated = True
 
     start_place = next(p for p in active_places if p["name"] == selected_start_name)
     remaining_places = [p for p in active_places if p["name"] != selected_start_name]
@@ -86,13 +87,12 @@ else:
     avg_lon = sum(p["coords"][1] for p in active_places) / len(active_places)
     m = folium.Map(location=[avg_lat, avg_lon], zoom_start=15, tiles="cartodbpositron")
 
-    # IF BUTTON CLICKED: Compute and draw the route
-    if run_optimization:
+    # RENDER ROUTE IF FLAG IS TRUE
+    if st.session_state.route_calculated:
         best_dist, best_path = find_best_route(start_place, remaining_places, k_stops)
 
         st.success(f"**Ruta óptima calculada:** {best_dist:.0f} metros totales a pie recorriendo {k_stops} bares.")
 
-        # Draw connecting line
         route_coords = [p["coords"] for p in best_path]
         folium.PolyLine(
             locations=route_coords,
@@ -102,7 +102,6 @@ else:
             tooltip=f"{best_dist:.0f} metros totales"
         ).add_to(m)
 
-        # Plot candidate circles for unselected active spots
         selected_names = {p["name"] for p in best_path}
         for p in active_places:
             if p["name"] not in selected_names:
@@ -116,7 +115,6 @@ else:
                     tooltip=p["name"]
                 ).add_to(m)
 
-        # Numbered badges for chosen stops on the route
         for idx, p in enumerate(best_path, 1):
             folium.Marker(
                 location=p["coords"],
@@ -129,7 +127,7 @@ else:
                 )
             ).add_to(m)
 
-    # DEFAULT INITIAL VIEW: Just display all active markers on the map
+    # RENDER DEFAULT MAP IF FLAG IS FALSE
     else:
         st.info("Configura los bares en la barra lateral y haz clic en **'Calcular Ruta Óptima'** para generar el mapa.")
         for p in active_places:
@@ -144,4 +142,4 @@ else:
                 )
             ).add_to(m)
 
-    st_folium(m, width=900, height=500)
+    st_folium(m, width=900, height=500, key="pub_crawl_map")
