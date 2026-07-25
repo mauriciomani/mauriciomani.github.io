@@ -1,2 +1,3 @@
 # mauriciomani.github.io
-My stuff
+
+Fuerza bruta para encontrar la mejor ruta entre 10 lugares de la roma Condesa
