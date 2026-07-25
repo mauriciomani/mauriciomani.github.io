@@ -1,0 +1,12 @@
+[project]
+name = "pub-crawl"
+version = "0.1.0"
+description = "Pub Crawl para la Roma-Condesa CDMX"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "folium>=0.20.0",
+    "geopy>=2.5.0",
+    "streamlit>=1.60.0",
+    "streamlit-folium>=0.27.3",
+]
