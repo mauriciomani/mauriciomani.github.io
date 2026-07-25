@@ -62,65 +62,86 @@ else:
     
     # Starting Venue Selector
     selected_start_name = st.sidebar.selectbox(
-        "Starting Venue:",
+        "Lugar de inicio:",
         options=selected_venue_names
     )
     
     # Total Stops Slider
     max_k = len(active_places)
     k_stops = st.sidebar.slider(
-        "Total Stops to Visit:",
+        "Bares a visitar en total:",
         min_value=2,
         max_value=max_k,
         value=min(4, max_k)
     )
 
+    # Action button in sidebar
+    run_optimization = st.sidebar.button("🚀 Calcular Ruta Óptima", type="primary")
+
     start_place = next(p for p in active_places if p["name"] == selected_start_name)
     remaining_places = [p for p in active_places if p["name"] != selected_start_name]
 
-    # Calculate optimal route
-    best_dist, best_path = find_best_route(start_place, remaining_places, k_stops)
-
-    st.write(f"**Ruta optima:** {best_dist:.0f} metros totales en {k_stops} bares.")
-
-    # Map Generation
+    # Map Base Configuration
     avg_lat = sum(p["coords"][0] for p in active_places) / len(active_places)
     avg_lon = sum(p["coords"][1] for p in active_places) / len(active_places)
     m = folium.Map(location=[avg_lat, avg_lon], zoom_start=15, tiles="cartodbpositron")
 
-    # Plot candidate circles for selected places
-    for p in active_places:
-        folium.CircleMarker(
-            location=p["coords"],
-            radius=5,
-            color="#2c3e50",
-            fill=True,
-            fill_color="#34495e",
-            fill_opacity=0.6,
-            tooltip=p["name"]
+    # IF BUTTON CLICKED: Compute and draw the route
+    if run_optimization:
+        best_dist, best_path = find_best_route(start_place, remaining_places, k_stops)
+
+        st.success(f"**Ruta óptima calculada:** {best_dist:.0f} metros totales a pie recorriendo {k_stops} bares.")
+
+        # Draw connecting line
+        route_coords = [p["coords"] for p in best_path]
+        folium.PolyLine(
+            locations=route_coords,
+            color="#e74c3c",
+            weight=5,
+            opacity=0.85,
+            tooltip=f"{best_dist:.0f} metros totales"
         ).add_to(m)
 
-    # Connecting PolyLine
-    route_coords = [p["coords"] for p in best_path]
-    folium.PolyLine(
-        locations=route_coords,
-        color="#e74c3c",
-        weight=5,
-        opacity=0.85,
-        tooltip=f"{best_dist:.0f} meters"
-    ).add_to(m)
+        # Plot candidate circles for unselected active spots
+        selected_names = {p["name"] for p in best_path}
+        for p in active_places:
+            if p["name"] not in selected_names:
+                folium.CircleMarker(
+                    location=p["coords"],
+                    radius=5,
+                    color="#7f8c8d",
+                    fill=True,
+                    fill_color="#95a5a6",
+                    fill_opacity=0.5,
+                    tooltip=p["name"]
+                ).add_to(m)
 
-    # Numbered Badges for Stops
-    for idx, p in enumerate(best_path, 1):
-        folium.Marker(
-            location=p["coords"],
-            popup=f"<b>Stop {idx}:</b> {p['name']}",
-            icon=folium.DivIcon(
-                html=f"""<div style="font-size: 11pt; color: white; background: #e74c3c; 
-                        border-radius: 50%; width: 28px; height: 28px; text-align: center; 
-                        line-height: 28px; font-weight: bold; border: 2px solid white;
-                        box-shadow: 0px 2px 5px rgba(0,0,0,0.3);">{idx}</div>"""
-            )
-        ).add_to(m)
+        # Numbered badges for chosen stops on the route
+        for idx, p in enumerate(best_path, 1):
+            folium.Marker(
+                location=p["coords"],
+                popup=f"<b>Parada {idx}:</b> {p['name']}",
+                icon=folium.DivIcon(
+                    html=f"""<div style="font-size: 11pt; color: white; background: #e74c3c; 
+                            border-radius: 50%; width: 28px; height: 28px; text-align: center; 
+                            line-height: 28px; font-weight: bold; border: 2px solid white;
+                            box-shadow: 0px 2px 5px rgba(0,0,0,0.3);">{idx}</div>"""
+                )
+            ).add_to(m)
+
+    # DEFAULT INITIAL VIEW: Just display all active markers on the map
+    else:
+        st.info("Configura los bares en la barra lateral y haz clic en **'Calcular Ruta Óptima'** para generar el mapa.")
+        for p in active_places:
+            is_start = (p["name"] == selected_start_name)
+            folium.Marker(
+                location=p["coords"],
+                popup=p["name"],
+                tooltip=f"{'🚩 Punto de inicio: ' if is_start else ''}{p['name']}",
+                icon=folium.Icon(
+                    color="red" if is_start else "blue",
+                    icon="play" if is_start else "info-sign"
+                )
+            ).add_to(m)
 
     st_folium(m, width=900, height=500)
