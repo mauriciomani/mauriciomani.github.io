@@ -1,7 +1,0 @@
-title: My Sandbox & Experiments
-author: Mauricio Mani
-description: A personal blog about technical projects, hacking wine/beer, and making things.
-theme: minima
-markdown: kramdown
-plugins:
-  - jekyll-feed
